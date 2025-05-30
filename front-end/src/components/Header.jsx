@@ -1,18 +1,22 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   return (
-    <div className="shadow-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-4">
-        <div className="flex items-center">
+    <header className="shadow-md">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-8">
+        <Link to="/" className="flex items-center">
           <img
             className="h-10"
             src="https://yt3.googleusercontent.com/n5GUY-L5kuEeNCdK5g0FiVbhoAHQJxAI-3xxvPIm1Qb2zjfRHrqNp6dakUwKGZUfBiyBrWqJPW4=s160-c-k-c0x00ffffff-no-rj"
             alt="Logo da hashtag"
           />
           <p className="text-primary-400 text-2xl font-bold">Airnbn</p>
-        </div>
-        <div className="flex items-center rounded-full border border-gray-300 py-2 pr-4 pl-6 shadow-md">
+        </Link>
+        <Link
+          to="/"
+          className="hidden items-center rounded-full border border-gray-300 py-2 pr-4 pl-6 shadow-md lg:flex"
+        >
           <p className="border-r border-r-gray-300 pr-4">Qualquer lugar</p>
           <p className="border-r border-r-gray-300 px-4">Qualquer semana</p>
           <p className="px-4">Hóspedes</p>
@@ -32,8 +36,11 @@ const Header = () => {
               />
             </svg>
           </div>
-        </div>
-        <div className="flex items-center gap-2 rounded-full border border-gray-300 py-2 pr-4 pl-6 shadow-md">
+        </Link>
+        <Link
+          to="/login"
+          className="flex items-center gap-2 rounded-full border border-gray-300 py-2 pr-4 pl-6 shadow-md"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -61,10 +68,10 @@ const Header = () => {
               clipRule="evenodd"
             />
           </svg>
-          <p className="px-4">Vinicius Borges</p>
-        </div>
+          <p className="max-w-20 truncate sm:max-w-32">Vinicius Borges</p>
+        </Link>
       </div>
-    </div>
+    </header>
   );
 };
 
