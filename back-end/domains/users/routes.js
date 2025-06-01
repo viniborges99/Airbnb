@@ -33,4 +33,29 @@ router.post('/', async (req, res) => {
   }
 });
 
+//Login do usuario
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const userdoc = await User.findOne({ email });
+
+    if (!userdoc) {
+      return res.status(400).json({ error: 'Usuario não encontrado' });
+    }
+
+    const passwordCorrect = bcrypt.compareSync(password, userdoc.password);
+
+    if (!passwordCorrect) {
+      return res.status(400).json({ error: 'Senha invalida' });
+    }
+
+    const { name, _id } = userdoc;
+
+    return res.json({ name, email, _id });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
