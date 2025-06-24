@@ -1,10 +1,13 @@
 import { Router } from 'express';
-
+import 'dotenv/config';
 import User from './model.js';
 import { connectDb } from '../../config/db.js';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+
 const router = Router();
 const bcryptSalt = bcrypt.genSaltSync();
+const { JWT_SECRET_KEY } = process.env;
 
 connectDb();
 router.get('/', async (req, res) => {
@@ -13,6 +16,17 @@ router.get('/', async (req, res) => {
     res.json(userDoc);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+router.get('/profile', async (req, res) => {
+  const { token } = req.cookies;
+  if (token) {
+    jwt.verify(token, JWT_SECRET_KEY, {}, (error, userInfo) => {
+      if (error) throw error;
+      res.json(userInfo);
+    });
+  } else {
+    res.json(null);
   }
 });
 
@@ -27,7 +41,15 @@ router.post('/', async (req, res) => {
       email,
       password: encryptedPassword,
     });
-    res.json(newUserDoc);
+
+    const { _id } = newUserDoc;
+
+    const newUserObj = { name, email, _id };
+
+    jwt.sign(newUserObj, JWT_SECRET_KEY, {}, (error, token) => {
+      if (error) throw error;
+      res.cookie('token', token).json(newUserObj);
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -40,22 +62,29 @@ router.post('/login', async (req, res) => {
   try {
     const userdoc = await User.findOne({ email });
 
-    if (!userdoc) {
-      return res.status(400).json({ error: 'Usuario não encontrado' });
+    if (userdoc) {
+      const passwordCorrect = bcrypt.compareSync(password, userdoc.password);
+      const { name, _id } = userdoc;
+
+      if (passwordCorrect) {
+        const newUserObj = { name, email, id: _id };
+        const token = jwt.sign(newUserObj, JWT_SECRET_KEY);
+
+        return res.cookie('token', token).json(newUserObj);
+      } else {
+        return res.status(400).json({ error: 'Senha inválida' });
+      }
+    } else {
+      return res.status(400).json({ error: 'Usuário não encontrado' });
     }
-
-    const passwordCorrect = bcrypt.compareSync(password, userdoc.password);
-
-    if (!passwordCorrect) {
-      return res.status(400).json({ error: 'Senha invalida' });
-    }
-
-    const { name, _id } = userdoc;
-
-    return res.json({ name, email, _id });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: 'Erro interno do servidor' });
   }
+});
+
+//Deslogando
+router.post('/logout', (req, res) => {
+  res.clearCookie('token').json({ message: 'Deslogado com sucesso!' });
 });
 
 export default router;
